@@ -17,8 +17,8 @@ export default function SettingsPage() {
 			axios
 				.get(import.meta.env.VITE_API_URL + "/users/profile", {
 					headers: {
-						Authorization: `Bearer ${token}`,
-					},
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
 				})
 				.then((response) => {
 					console.log(response.data);
@@ -52,8 +52,8 @@ export default function SettingsPage() {
 			updatedInfo,
 			{
 				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
 			}
 		);
 
@@ -76,8 +76,8 @@ export default function SettingsPage() {
 			},
 			{
 				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
 			}
 		);
 

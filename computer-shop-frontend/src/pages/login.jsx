@@ -14,14 +14,18 @@ export default function LoginPage() {
 			const response = await axios.post(import.meta.env.VITE_API_URL + "/users/login",
 				{
 					email : email,
-					password : password
+					password : password,
+					 rememberme: true
 				}
 			)
 			console.log(response)
-			toast.success("Login Successful")
+			
 
 			localStorage.setItem("token" , response.data.token)
+			  console.log("TOKEN SAVED:", localStorage.getItem("token"));
 			
+			  toast.success("Login Successful")
+
 			if(response.data.role == "admin"){				
 				navigate("/admin/")
 			}else{
@@ -33,6 +37,7 @@ export default function LoginPage() {
 	}
 
 	return (
+		
 		<div className="w-full h-full bg-[url('/background.jpg')] bg-cover no-repeat bg-center flex">
 			<div className="w-[50%]  h-full hidden lg:flex justify-center items-center flex-col">
 				<img src="/logo.png" className="w-[300px]" />
