@@ -6,142 +6,142 @@ import getFormattedDate from "../../utils/date-format";
 import toast from "react-hot-toast";
 import ViewOrderInfoModal from "../../components/viewOrderInfoModal";
 
+function StatusBadge({ status }) {
+  const styles = {
+    Delivered:  "bg-green-100 text-green-700",
+    Processing: "bg-blue-100 text-blue-700",
+    Pending:    "bg-yellow-100 text-yellow-700",
+    Cancelled:  "bg-red-100 text-red-700",
+  };
+  const dots = {
+    Delivered:  "bg-green-500",
+    Processing: "bg-blue-500",
+    Pending:    "bg-yellow-500",
+    Cancelled:  "bg-red-500",
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${styles[status] ?? "bg-gray-100 text-gray-600"}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${dots[status] ?? "bg-gray-400"}`} />
+      {status}
+    </span>
+  );
+}
+
 export default function AdminOrdersPage() {
-	const [orders, setOrders] = useState([]);
-	const [pageNumber, setPageNumber] = useState(1);
-	const [pageSize, setPageSize] = useState(10);
-	const [totalPages, setTotalPages] = useState(0);
-	const [loading, setLoading] = useState(true);
+  const [orders, setOrders]       = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize]   = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading]     = useState(true);
 
-	useEffect(() => {
-		if (loading) {
-			const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (!loading) return;
+    const token = localStorage.getItem("token");
+    axios
+      .get(
+        `${import.meta.env.VITE_API_URL}/orders/${pageSize}/${pageNumber}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((res) => {
+        setOrders(res.data.orders);
+        setTotalPages(res.data.totalPages);
+        setLoading(false);
+      });
+  }, [loading]);
 
-			axios
-				.get(
-					import.meta.env.VITE_API_URL +
-						"/orders/" +
-						pageSize +
-						"/" +
-						pageNumber,
-					{
-						headers: {
-							Authorization: "Bearer " + token,
-						},
-					},
-				)
-				.then((response) => {
-					setOrders(response.data.orders);
-					setTotalPages(response.data.totalPages);
-					setLoading(false);
-				});
-		}
-	}, [loading]);
+  function prevPage() {
+    if (pageNumber > 1) { setPageNumber(p => p - 1); setLoading(true); }
+    else toast.success("You are on the first page");
+  }
 
-	return (
-		<div className="w-full h-full overflow-y-scroll relative">
-			<div className="flex items-center justify-between gap-3 px-5 py-4 bg-primary/60 border-b border-secondary/10">
-				<div>
-					<h2 className="text-lg font-semibold text-secondary">Orders</h2>
-					<p className="text-sm text-secondary/70">
-						Manage your orders at a glance
-					</p>
-				</div>
-			</div>
-			{ loading ? (
-				<div className="w-full h-full flex justify-center items-center">
-					<LoadingAnimation />
-				</div>
-			) : (
-				<table className="min-w-[1100px] w-full text-sm relative">
-                    <thead className="sticky top-0 z-10 bg-white">
-						<tr className="border-b border-secondary/10">
-							<th className="px-5 py-3  text-center text-xs font-semibold uppercase tracking-wide text-secondary/70">
-								Order ID
-							</th>
-							<th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-tight text-secondary/70">
-								Customer Name
-							</th>
-							<th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-secondary/70">
-								Email
-							</th>
-							<th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-secondary/70">
-								Date
-							</th>
-							<th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-secondary/70">
-                                Total Amount
-							</th>
-                            <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-secondary/70">
-                                Status
-                            </th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order.id} className="border-b border-secondary/10">
-                                <td className="px-5 py-3 text-center">{order.orderId}</td>
-                                <td className="px-5 py-3 text-center">{order.firstName + " "+order.lastName}</td>
-                                <td className="px-5 py-3 text-center">{order.email}</td>
-                                <td className="px-5 py-3 text-center">{getFormattedDate(order.date)}</td>
-                                <td className="px-5 py-3 text-center">{getFormattedPrice(order.total)}</td>
-                                <td className="px-5 py-3 text-center">{order.status}</td>
-                                <td className="px-5 py-3 text-center">
-                                    <ViewOrderInfoModal order={order}/>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-			)}
-            <div className="w-full absolute bottom-5 left-0 h-[50px] flex justify-center items-center ">
-                <div className="w-[500px] h-full bg-white shadow-2xl rounded-full flex items-center justify-center px-2">
-                    <button className="bg-accent w-[100px] text-white p-2 rounded-full cursor-pointer hover:bg-accent/80"
-                        onClick={() => {
-                            if(pageNumber > 1){
-                                setPageNumber(pageNumber - 1);
-                                setLoading(true);
-                            }else{
-                                toast.success("You are on the first page");
-                            }
-                        }}
-                    >
-                        Previous
-                    </button>
-                    <span className="text-sm text-secondary w-[100px] text-center">
-                        Page {pageNumber} of {totalPages}
-                    </span>
-                    <button className="bg-accent text-white p-2 rounded-full w-[100px] cursor-pointer hover:bg-accent/80"
-                        onClick={
-                            ()=>{
-                                if(pageNumber < totalPages){
-                                    setPageNumber(pageNumber + 1);
-                                    setLoading(true);
-                                }else{
-                                    toast.success("You are on the last page");
-                                }
-                            }
-                        }
-                        >
-                        Next
-                    </button>
+  function nextPage() {
+    if (pageNumber < totalPages) { setPageNumber(p => p + 1); setLoading(true); }
+    else toast.success("You are on the last page");
+  }
 
-                    <select
-                        value={pageSize}
-                        onChange={(e) => {
-                            setPageSize(parseInt(e.target.value));
-                            setLoading(true);
-                        }}
-                        className="ml-5 border border-secondary/20 rounded px-3 py-2 text-sm"
-                    >
-                        {/* <option value={2}>2 per page</option>
-                        <option value={5}>5 per page</option> */}
-                        <option value={10}>10 per page</option>
-                        <option value={20}>20 per page</option>
-                        <option value={50}>50 per page</option>
-                    </select>
-                </div>
-            </div>
-		</div>
-	);
+  return (
+    <div className="flex flex-col h-full bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-5 py-4 flex-shrink-0">
+        <h2 className="text-sm font-medium text-gray-800">Orders</h2>
+        <p className="text-xs text-gray-400 mt-0.5">Manage your orders at a glance</p>
+      </div>
+
+      {/* Table */}
+      <div className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <LoadingAnimation />
+          </div>
+        ) : (
+          <table className="w-full text-sm border-collapse min-w-[900px]">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-gray-50 border-b border-gray-200">
+                {["Order ID", "Customer Name", "Email", "Date", "Total Amount", "Status", "Actions"].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-[10.5px] font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {orders.map((order) => (
+                <tr key={order._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-gray-400">
+                    #{order.orderId}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 font-medium">
+                    {order.firstName} {order.lastName}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{order.email}</td>
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    {getFormattedDate(order.date)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 font-medium">
+                    {getFormattedPrice(order.total)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={order.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <ViewOrderInfoModal order={order} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Pagination */}
+      <div className="bg-white border-t border-gray-200 px-5 py-3 flex items-center justify-center gap-3 flex-shrink-0">
+        <button
+          onClick={prevPage}
+          className="px-5 py-1.5 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-400 w-28 text-center">
+          Page {pageNumber} of {totalPages}
+        </span>
+        <button
+          onClick={nextPage}
+          className="px-5 py-1.5 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm transition-colors"
+        >
+          Next
+        </button>
+        <select
+          value={pageSize}
+          onChange={(e) => { setPageSize(parseInt(e.target.value)); setPageNumber(1); setLoading(true); }}
+          className="ml-2 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-600 bg-white"
+        >
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+        </select>
+      </div>
+
+    </div>
+  );
 }

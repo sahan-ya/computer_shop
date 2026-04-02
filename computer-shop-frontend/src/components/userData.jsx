@@ -40,22 +40,18 @@ export default function UserData(){
                
                             <img src={user.image} className="w-[50px] h-[50px] object-cover"/>
                                         
-                <select value={state} onChange={
-                    (e)=>{
-                        setState(e.target.value)
-                        if(e.target.value=="orders"){
-                            window.location.href="/my-orders"
-                        }
-                        if(e.target.value=="settings"){
-                            window.location.href="/settings"
-                        }
-                        if(e.target.value=="logout"){
-                            localStorage.removeItem("token")
-                            window.location.href="/login"
-                        }
-                        setState("me")                        
-                    }
-                } className="bg-transparent text-white">
+                <select value={state} onChange={(e) => {
+    const val = e.target.value;
+    if (val === "orders")   window.location.href = "/profilePage";
+    if (val === "settings") window.location.href = "/profilePage";
+    if (val === "logout") {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    }
+    setState("me");
+}}
+
+                className="bg-transparent text-white">
                           <option value="me" className="bg-accent p-2">{user.firstName}</option>
                           <option value="orders" className="bg-accent p-2">My orders</option>
                           <option value="settings" className="bg-accent p-2">Settings</option>

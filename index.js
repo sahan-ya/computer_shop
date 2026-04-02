@@ -30,7 +30,7 @@ app.use(express.json()) // Middleware to parse JSON bodies of incoming requests
 
 
 app.use("/api/users", userRouter);// Use the userRouter for routes starting with /users
-app.use("/api/products", authorizeUser, productRouter); // Use the productRouter for routes starting with /products
+app.use("/api/products", productRouter); // Use the productRouter for routes starting with /products
 
 app.listen(5000,
     ()=>{

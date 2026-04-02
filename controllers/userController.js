@@ -95,6 +95,47 @@ export function loginUser(req, res) {
 		});
 }
 
+export const googleLogin = async (req, res) => {
+  try {
+    const { email, name, picture } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Google login failed: email missing",
+      });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    // If not, create new user
+    if (!user) {
+      user = await User.create({
+        email,
+        firstName: name,
+        profileImage: picture,
+        password: "google_auth", // dummy password
+      });
+    }
+
+    // Generate token
+    const token = generateToken(user);
+
+    res.status(200).json({
+      message: "Google login successful",
+      token,
+      role: user.role,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error during Google login",
+    });
+  }
+};
+
+
 export function getUser(req,res){
 
 	if(req.user == null){
